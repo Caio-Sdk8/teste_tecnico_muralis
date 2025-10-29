@@ -1,0 +1,401 @@
+{
+	"info": {
+		"_postman_id": "0b12b4eb-a7c2-40e4-ae95-9b6a7d41bc94",
+		"name": "Desafio Muralis",
+		"description": "Esta coleção postman contém exemplos básicos das requisições dispostas na api, porém para que seus testes sejam efetivos e com sucesso, prestem atenção nas observações das rotas que serão mencionadas abaixo:\n\n**Criação de Cliente**\n\nPara criar o cliente, utilize um corpo semelhante à:\n\n``` json\n{\n  \"nome\": \"string\",\n  \"endereco\": {\n    \"cep\": \"string\",\n    \"numero\": \"string\",\n    \"complemento\": \"string\"\n  },\n  \"contatos\": [\n    {\n      \"tipo\": \"string\",\n      \"texto\": \"string\"\n    }\n  ]\n}\n\n ```\n\nSendo contatos um array, possibilitando o cadastro de multiplos contatos de uma só vez.  \nContatos e Endereço são opcionais, então caso queira, não é necessário incluir no corpo da requisição.  \n\n**Edição de Clientes**\n\nPara editar os clientes, utilize um corpo semelhante à:\n\n``` json\n{\n  \"id\": 0,\n  \"nome\": \"string\",\n  \"endereco\": {\n    \"id\": 0,\n    \"cep\": \"string\",\n    \"numero\": \"string\",\n    \"complemento\": \"string\"\n  },\n  \"contatos\": [\n    {\n      \"id\": 0,\n      \"tipo\": \"string\",\n      \"texto\": \"string\"\n    }\n  ]\n}\n\n ```\n\nPara facilitar você pode escolher o Cliente que deseja atualizar por uma das duas listagens, colar aqui e alterar as informações que deseja.  \nPara o caso do endereço, você pode tanto alterar uma informação isoladamente quanto usar o corpo de criação para alterar \"do 0\", e tirar tudo caso queira excluir  \nPara o caso dos contatos, basta não enviar um contato que exista para ele ser excluido, para editar é só mandar completo com as devidas alterações, e para adicionar mais um é só usar um corpo de contato semelhante ao usado na criação.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17313424"
+	},
+	"item": [
+		{
+			"name": "Criação de Clientes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Criação de Clientes - POST",
+							"pm.test(\"Status code is 201 or 200\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([201, 200]);",
+							"});",
+							"pm.test(\"Response time is less than 1000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});",
+							"pm.test(\"Content-Type is application/json\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+							"});",
+							"",
+							"let jsonData;",
+							"try {",
+							"    jsonData = pm.response.json();",
+							"    pm.test(\"Response is valid JSON\", function () {",
+							"        pm.expect(jsonData).to.be.an(\"object\");",
+							"    });",
+							"    pm.test(\"Response has required fields\", function () {",
+							"        pm.expect(jsonData).to.have.property(\"id\");",
+							"        pm.expect(jsonData).to.have.property(\"nome\");",
+							"    });",
+							"    // Optionally check for endereco and contatos if present",
+							"    pm.test(\"Endereco and contatos are objects/arrays if present\", function () {",
+							"        if (jsonData.endereco) pm.expect(jsonData.endereco).to.be.an(\"object\");",
+							"        if (jsonData.contatos) pm.expect(jsonData.contatos).to.be.an(\"array\");",
+							"    });",
+							"    // Store created client id for later use",
+							"    if (jsonData.id) {",
+							"        pm.collectionVariables.set(\"createdClientId\", jsonData.id);",
+							"        console.log(\"Stored createdClientId:\", jsonData.id);",
+							"    }",
+							"} catch (e) {",
+							"    console.error(\"Response is not valid JSON\", e);",
+							"}",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Caio Soares\",\n  \"endereco\": {\n    \"cep\": \"08810130\",\n    \"numero\": \"353\",\n    \"complemento\": \"casa\"\n  },\n  \"contatos\": [\n    {\n      \"tipo\": \"telefone\",\n      \"texto\": \"(11) 97500-5413\"\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/Cliente",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"Cliente"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Atualização de Cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Atualização de Cliente - PUT",
+							"pm.test(\"Status code is 200 or 204\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+							"});",
+							"pm.test(\"Response time is less than 1000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});",
+							"pm.test(\"Content-Type is application/json\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+							"});",
+							"",
+							"let jsonData;",
+							"try {",
+							"    jsonData = pm.response.json();",
+							"    pm.test(\"Response is valid JSON\", function () {",
+							"        pm.expect(jsonData).to.be.an(\"object\");",
+							"    });",
+							"    pm.test(\"Response has required fields\", function () {",
+							"        pm.expect(jsonData).to.have.property(\"id\");",
+							"        pm.expect(jsonData).to.have.property(\"nome\");",
+							"    });",
+							"    // Optionally check for endereco and contatos if present",
+							"    pm.test(\"Endereco and contatos are objects/arrays if present\", function () {",
+							"        if (jsonData.endereco) pm.expect(jsonData.endereco).to.be.an(\"object\");",
+							"        if (jsonData.contatos) pm.expect(jsonData.contatos).to.be.an(\"array\");",
+							"    });",
+							"    // Log updated client id",
+							"    if (jsonData.id) {",
+							"        console.log(\"Updated client id:\", jsonData.id);",
+							"    }",
+							"} catch (e) {",
+							"    console.warn(\"No JSON body or not valid JSON\", e);",
+							"}",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 1,\n    \"nome\": \"Caio\",\n    \"dataCadastro\": \"2025-10-29T21:28:45.7174939\",\n    \"endereco\": {\n        \"id\": 1,\n        \"cep\": \"08810130\",\n        \"logradouro\": \"Rua Nina Rodrigues\",\n        \"cidade\": \"Mogi das Cruzes\",\n        \"numero\": \"353\",\n        \"complemento\": \"casa\"\n    },\n    \"contatos\": [\n        {\n            \"id\": 1,\n            \"tipo\": \"telefone\",\n            \"texto\": \"(11) 97500-5413\"\n        },\n        {\n            \"tipo\": \"email\",\n            \"texto\": \"caioadriana5@gmail.com\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5042/api/Cliente",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5042",
+					"path": [
+						"api",
+						"Cliente"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listagem de Clientes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Listagem de Clientes - GET",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response time is less than 1000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});",
+							"pm.test(\"Content-Type is application/json\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+							"});",
+							"",
+							"let jsonData;",
+							"try {",
+							"    jsonData = pm.response.json();",
+							"    pm.test(\"Response is valid JSON\", function () {",
+							"        pm.expect(jsonData).to.be.an(\"object\");",
+							"    });",
+							"    pm.test(\"Response has 'items' array or is an array\", function () {",
+							"        pm.expect(jsonData.items || jsonData).to.be.an(\"array\");",
+							"    });",
+							"    // Check at least one client has required fields",
+							"    let clients = jsonData.items || jsonData;",
+							"    if (clients.length > 0) {",
+							"        pm.test(\"Each client has id and nome\", function () {",
+							"            clients.forEach(function(client) {",
+							"                pm.expect(client).to.have.property(\"id\");",
+							"                pm.expect(client).to.have.property(\"nome\");",
+							"            });",
+							"        });",
+							"    }",
+							"    // Optionally log first client",
+							"    if (clients.length > 0) {",
+							"        console.log(\"First client:\", clients[0]);",
+							"    }",
+							"} catch (e) {",
+							"    console.error(\"Response is not valid JSON\", e);",
+							"}",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/api/Cliente?pagina=1&tamanho=10",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"Cliente"
+					],
+					"query": [
+						{
+							"key": "pagina",
+							"value": "1"
+						},
+						{
+							"key": "tamanho",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar por id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Buscar por id - GET",
+							"pm.test(\"Status code is 200 or 404\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+							"});",
+							"pm.test(\"Response time is less than 1000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});",
+							"pm.test(\"Content-Type is application/json\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    let jsonData;",
+							"    try {",
+							"        jsonData = pm.response.json();",
+							"        pm.test(\"Response is valid JSON\", function () {",
+							"            pm.expect(jsonData).to.be.an(\"object\");",
+							"        });",
+							"        pm.test(\"Response has required fields\", function () {",
+							"            pm.expect(jsonData).to.have.property(\"id\");",
+							"            pm.expect(jsonData).to.have.property(\"nome\");",
+							"        });",
+							"        // Optionally check for endereco and contatos if present",
+							"        pm.test(\"Endereco and contatos are objects/arrays if present\", function () {",
+							"            if (jsonData.endereco) pm.expect(jsonData.endereco).to.be.an(\"object\");",
+							"            if (jsonData.contatos) pm.expect(jsonData.contatos).to.be.an(\"array\");",
+							"        });",
+							"        console.log(\"Fetched client:\", jsonData);",
+							"    } catch (e) {",
+							"        console.error(\"Response is not valid JSON\", e);",
+							"    }",
+							"} else if (pm.response.code === 404) {",
+							"    pm.test(\"Not found message present\", function () {",
+							"        pm.expect(pm.response.text().toLowerCase()).to.include(\"not found\");",
+							"    });",
+							"}",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:5042/api/Cliente/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5042",
+					"path": [
+						"api",
+						"Cliente",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Exclusão de Cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Exclusão de Cliente - DELETE",
+							"pm.test(\"Status code is 200, 204, or 404\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 204, 404]);",
+							"});",
+							"pm.test(\"Response time is less than 1000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});",
+							"pm.test(\"Content-Type is application/json\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+							"});",
+							"",
+							"if (pm.response.code === 200 || pm.response.code === 204) {",
+							"    pm.test(\"Client deleted successfully (empty or confirmation message)\", function () {",
+							"        let body = pm.response.text();",
+							"        pm.expect(body.length === 0 || body.toLowerCase().includes(\"sucesso\") || body.toLowerCase().includes(\"deleted\")).to.be.true;",
+							"    });",
+							"    // Optionally clear the createdClientId variable if deleted",
+							"    pm.collectionVariables.unset(\"createdClientId\");",
+							"    console.log(\"Deleted client and cleared createdClientId variable\");",
+							"} else if (pm.response.code === 404) {",
+							"    pm.test(\"Not found message present\", function () {",
+							"        pm.expect(pm.response.text().toLowerCase()).to.include(\"not found\");",
+							"    });",
+							"}",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:5042/api/Cliente/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5042",
+					"path": [
+						"api",
+						"Cliente",
+						"2"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
